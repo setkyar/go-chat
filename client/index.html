@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+</head>
+<body>
+    <h1>Group Chat</h1>
+    <textarea id="chatBox" readonly style="width:100%;height:300px;"></textarea>
+    <input type="text" id="messageInput" style="width:80%;">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var ws = new WebSocket("ws://localhost:8000/ws");
+        ws.onmessage = function(event) {
+            var chatBox = document.getElementById("chatBox");
+            chatBox.value += event.data + "\n";
+        };
+
+        function sendMessage() {
+            var messageInput = document.getElementById("messageInput");
+            ws.send(messageInput.value);
+            messageInput.value = "";
+        }
+    </script>
+</body>
+</html>
