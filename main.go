@@ -82,9 +82,17 @@ func main() {
 	// WebSocket route
 	http.HandleFunc("/ws", handleConnections)
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "client/index.html")
+	})
+
+	// Serve static assets
+	fs := http.FileServer(http.Dir("client"))
+	http.Handle("/client/", http.StripPrefix("/client/", fs))
+
 	// Start the server
 	fmt.Println("Server started on :8000")
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe("0.0.0.0:8000", nil)
 	if err != nil {
 		fmt.Println("ListenAndServe: ", err)
 	}

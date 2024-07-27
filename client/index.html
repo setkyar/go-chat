@@ -11,17 +11,68 @@
     <input type="text" id="messageInput" style="width:80%;">
     <button onclick="sendMessage()">Send</button>
 
+    <!-- Mute button -->
+    <button onclick="muteNotification()" id="muteButton">Mute</button>
+
+    <!-- <input type="file" onchange="encodeImageFileAsURL(this)" id="attachmentInput" style="width:20%;"> -->
+
     <script>
-        var ws = new WebSocket("ws://localhost:8000/ws");
+        addEventListener("keydown", (event) => {
+            // Number 13 is the "Enter" key on the keyboard
+            if (event.keyCode === 13) {
+                sendMessage();
+            }
+        });
+
+        var secure = window.location.protocol === "https:" ? "wss" : "ws";
+        var ws = new WebSocket(`${secure}://${window.location.host}/ws`);
+
+        let isMute = false;
+
         ws.onmessage = function(event) {
             var chatBox = document.getElementById("chatBox");
             chatBox.value += event.data + "\n";
+            // play sound when receive message and it's not from me
+
+            if (!isMute) {
+                var audio = new Audio(window.location.origin + "/client/notification.wav");
+                audio.play();
+            }
         };
+
+        function muteNotification() {
+            isMute = !isMute;
+            if (isMute) {
+                document.getElementById("muteButton").innerHTML = "Unmute";
+            } else {
+                document.getElementById("muteButton").innerHTML = "Mute";
+            }
+        }
 
         function sendMessage() {
             var messageInput = document.getElementById("messageInput");
+            const msg = {
+                message: messageInput.value,
+                id: Math.random().toString(36).substr(2, 9)
+            }
             ws.send(messageInput.value);
             messageInput.value = "";
+
+            // get attachmentInput
+            const attachmentInput = document.getElementById("attachmentInput");
+            // get value and conver to base 64 in client side
+
+            var chatBox = document.getElementById("chatBox");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function encodeImageFileAsURL(element) {
+            var file = element.files[0];
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                console.log('RESULT', reader.result)
+            }
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
